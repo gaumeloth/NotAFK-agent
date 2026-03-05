@@ -13,7 +13,7 @@ if exist "%SCRIPT_PATH%" (
 ) else (
     for /f %%G in ('powershell -NoProfile -Command "[System.Guid]::NewGuid().ToString()"') do set "GUID=%%G"
     set "TEMP_SCRIPT=%TEMP%\notafk-agent-!GUID!.ps1"
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -UseBasicParsing -Uri '%REMOTE_SCRIPT_URL%' -OutFile '%TEMP_SCRIPT%' ^| Out-Null" || (
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -UseBasicParsing -Uri '%REMOTE_SCRIPT_URL%' -OutFile '%TEMP_SCRIPT%'" >nul || (
         echo Errore durante il download dello script PowerShell da %REMOTE_SCRIPT_URL%.
         exit /b 1
     )
