@@ -6,6 +6,28 @@ REPO_URL="${REPO_URL:-https://github.com/gaumeloth/NotAFK-agent.git}"
 BRANCH="${BRANCH:-main}"
 OUTPUT_OVERRIDE="${NOTAFK_OUTPUT:-}"
 
+SCRIPT_DIR=""
+if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
+run_setup() {
+    if [[ "${NOTAFK_SKIP_SETUP:-}" == "1" ]]; then
+        echo "NOTAFK_SKIP_SETUP=1 rilevato: salto il setup automatico delle dipendenze."
+        return
+    fi
+
+    if [[ -n "$SCRIPT_DIR" && -f "$SCRIPT_DIR/setup-unix.sh" ]]; then
+        echo "Eseguo script di setup locale ($SCRIPT_DIR/setup-unix.sh)..."
+        bash "$SCRIPT_DIR/setup-unix.sh"
+    else
+        echo "Scarico ed eseguo lo script di setup..."
+        curl -fsSL https://raw.githubusercontent.com/gaumeloth/NotAFK-agent/main/scripts/setup-unix.sh | bash
+    fi
+}
+
+run_setup
+
 if ! command -v git >/dev/null 2>&1; then
     echo "Errore: git non e' installato o non e' nel PATH." >&2
     exit 1

@@ -7,12 +7,42 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+$ScriptRoot = Split-Path -Parent $PSCommandPath
+
 function Test-Dependency {
     param([string]$Name)
     if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
         throw "Lo strumento richiesto '$Name' non e' stato trovato nel PATH."
     }
 }
+
+function Invoke-Setup {
+    if ($env:NOTAFK_SKIP_SETUP -eq "1") {
+        Write-Host "NOTAFK_SKIP_SETUP=1: salto il setup automatico."
+        return
+    }
+
+    $localSetup = Join-Path $ScriptRoot "setup-windows.ps1"
+    if (Test-Path $localSetup) {
+        Write-Host "Eseguo setup locale ($localSetup)..."
+        & $localSetup -InstallMissing:$true
+        return
+    }
+
+    $tempSetup = Join-Path $env:TEMP ("notafk-setup-" + [System.Guid]::NewGuid().ToString() + ".ps1")
+    Write-Host "Scarico ed eseguo lo script di setup..."
+    try {
+        Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/gaumeloth/NotAFK-agent/main/scripts/setup-windows.ps1" -OutFile $tempSetup
+        & $tempSetup -InstallMissing:$true
+    }
+    finally {
+        if (Test-Path $tempSetup) {
+            Remove-Item $tempSetup -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+Invoke-Setup
 
 Test-Dependency -Name "git"
 Test-Dependency -Name "uv"
