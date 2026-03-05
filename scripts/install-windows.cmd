@@ -17,7 +17,7 @@ if exist "%SCRIPT_PATH%" (
         echo Errore durante il download dello script PowerShell da %REMOTE_SCRIPT_URL%.
         exit /b 1
     )
-    set "RUNNER=%TEMP_SCRIPT%"
+    set "RUNNER=!TEMP_SCRIPT!"
 )
 
 if not defined RUNNER (
